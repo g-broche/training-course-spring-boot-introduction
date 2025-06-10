@@ -67,6 +67,6 @@ A set of Curl requests are provided to test the entire scope of CRUD operations 
 
     `curl -X POST http://localhost:8080/products/bundle -H "Content-Type: application/json" -d "[7,7]"`
 
-    * Error for attempting to create a bundle using a product itself beinf a bundle and a product that is part of that existing bundle. For this we will use the bundle previously created with "Keyboard", "Mouse" and "Monitor" which is id 8 if the sequence of queries is followed.
+    * Error for attempting to create a bundle using a product itself being a bundle and a product that is part of that existing bundle. For this we will use the bundle previously created with "Keyboard", "Mouse" and "Monitor" which is id 8 if the sequence of queries is followed.
 
     `curl -X POST http://localhost:8080/products/bundle -H "Content-Type: application/json" -d "[4,8]"`
