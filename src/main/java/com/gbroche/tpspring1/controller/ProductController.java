@@ -3,12 +3,14 @@ package com.gbroche.tpspring1.controller;
 import com.gbroche.tpspring1.model.Product;
 import com.gbroche.tpspring1.repository.ProductRepository;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -27,8 +29,13 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
-    public Product getById(@PathVariable Long id) {
-        return repository.findById(id).orElseThrow();
+    public ResponseEntity<?> getById(@PathVariable Long id) {
+        try {
+            Product foundProduct = repository.findById(id).orElseThrow();
+            return ResponseEntity.ok(foundProduct);
+        } catch (Exception e) {
+            return ResponseEntity.status(404).body("No corresponding product found");
+        }
     }
 
     @PostMapping
@@ -37,24 +44,37 @@ public class ProductController {
     }
 
     @PostMapping(value = "/{id}/duplicate")
-    public Product duplicate(@PathVariable Long id) {
-        Product ProductToCopy = repository.findById(id).orElseThrow();
-        Product duplicate = new Product();
-        duplicate.setName(ProductToCopy.getName() + " (Copy)");
-        duplicate.setPrice(ProductToCopy.getPrice());
-        return repository.save(duplicate);
+    public ResponseEntity<?> duplicate(@PathVariable Long id) {
+        try {
+            Product ProductToCopy = repository.findById(id).orElseThrow();
+            Product duplicate = new Product();
+            duplicate.setName(ProductToCopy.getName() + " (Copy)");
+            duplicate.setPrice(ProductToCopy.getPrice());
+            Product createDuplicate = repository.save(duplicate);
+            return ResponseEntity.ok(createDuplicate);
+        } catch (Exception e) {
+            return ResponseEntity.status(404).body("No product found with given ID to dupplicate");
+        }
+
     }
 
     @PostMapping("/bundle")
-    public ResponseEntity createBundle(@RequestBody List<Long> productIds) {
+    public ResponseEntity<?> createBundle(@RequestBody List<Long> productIds) {
+        if (productIds.size() <= 1) {
+            return ResponseEntity.badRequest().body("At least 2 products are required to create a bundle");
+        }
         List<Product> baseProducts = new ArrayList<>();
         Set<Long> uniqueIds = new HashSet<>(productIds);
         if (uniqueIds.size() != productIds.size()) {
             return ResponseEntity.badRequest().body("Duplicate product IDs are not allowed");
         }
-        for (Long productId : productIds) {
-            Product newProductOfBundle = repository.findById(productId).orElseThrow();
-            baseProducts.add(newProductOfBundle);
+        try {
+            for (Long productId : productIds) {
+                Product newProductOfBundle = repository.findById(productId).orElseThrow();
+                baseProducts.add(newProductOfBundle);
+            }
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.badRequest().body("One of the product id given does not correspond to any product");
         }
 
         if (doesBundleRequestCauseRecursion(baseProducts)) {
@@ -88,8 +108,16 @@ public class ProductController {
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
-        repository.deleteById(id);
+    public ResponseEntity<?> delete(@PathVariable Long id) {
+        try {
+            if (!repository.existsById(id)) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(("No product to delete found at this id"));
+            }
+            repository.deleteById(id);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     private boolean doesBundleRequestCauseRecursion(List<Product> products) {
