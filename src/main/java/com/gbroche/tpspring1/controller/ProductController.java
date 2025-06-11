@@ -3,12 +3,9 @@ package com.gbroche.tpspring1.controller;
 import com.gbroche.tpspring1.model.Product;
 import com.gbroche.tpspring1.repository.ProductRepository;
 
-import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -16,7 +13,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/products")
+@RequestMapping("api/products")
 public class ProductController {
     private final ProductRepository repository;
 
