@@ -17,7 +17,16 @@ public class Product {
     @JoinTable(name = "product_sources", joinColumns = @JoinColumn(name = "product_id"), inverseJoinColumns = @JoinColumn(name = "source_id"))
     private List<Product> sources = new ArrayList<>();
 
-    // Getters et setters
+    public Product() {
+    }
+
+    public Product(Long id, String name, double price, List<Product> sources) {
+        this.id = id;
+        this.name = name;
+        this.price = price;
+        this.sources = sources;
+    }
+
     public Long getId() {
         return id;
     }
